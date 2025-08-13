@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Spring AI ElevenLabs Text-to-Speech Test</title>
+
+    <!-- ========== STYLING SECTION ========== -->
+    <style>
+        /* Main container styling for clean layout */
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+
+        /* White card container with shadow */
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        /* Page title styling */
+        h1 {
+            color: #333;
+            text-align: center;
+        }
+
+        /* Form group spacing and layout */
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        /* Label styling for form fields */
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+
+        /* Input field styling - consistent appearance */
+        input, textarea, select {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+
+        /* Textarea specific styling */
+        textarea {
+            height: 100px;
+            resize: vertical;
+        }
+
+        /* Button styling - centered and prominent */
+        button {
+            background-color: #007bff;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            display: block;
+            margin: 20px auto;
+            min-width: 200px;
+        }
+
+        /* Button hover effects */
+        button:hover {
+            background-color: #0056b3;
+        }
+
+        /* Disabled button styling */
+        button:disabled {
+            background-color: #ccc;
+            cursor: not-allowed;
+        }
+
+        /* Audio section styling */
+        .audio-section {
+            margin-top: 30px;
+            text-align: center;
+        }
+
+        /* Audio player full width */
+        audio {
+            width: 100%;
+            margin-top: 10px;
+        }
+
+        /* Log area styling for console output */
+        .log {
+            background-color: #f8f9fa;
+            border: 1px solid #e9ecef;
+            border-radius: 4px;
+            padding: 15px;
+            margin-top: 20px;
+            max-height: 200px;
+            overflow-y: auto;
+            font-family: monospace;
+            font-size: 12px;
+        }
+
+        /* Log message color coding */
+        .error {
+            color: #dc3545;
+        }
+        .success {
+            color: #28a745;
+        }
+        .info {
+            color: #17a2b8;
+        }
+    </style>
+</head>
+<body>
+<!-- ========== MAIN CONTAINER ========== -->
+<div class="container">
+    <h1>🎤 Spring AI ElevenLabs Text-to-Speech Test</h1>
+
+    <!-- ========== TTS INPUT FORM ========== -->
+    <!-- This form collects all parameters needed for TTS API call -->
+    <form id="ttsForm">
+
+        <!-- Text input field - the content to be converted to speech -->
+        <div class="form-group">
+            <label for="text">Text to Convert to Speech:</label>
+            <textarea id="text" name="text" placeholder="Enter the text you want to convert to speech..." required>Hello! This is a test of Spring AI with ElevenLabs text-to-speech integration.</textarea>
+        </div>
+
+        <!-- Voice selection dropdown - ElevenLabs voice IDs -->
+        <div class="form-group">
+            <label for="voiceId">Voice ID:</label>
+            <select id="voiceId" name="voiceId">
+                <!-- Popular ElevenLabs voices with descriptions -->
+                <option value="21m00Tcm4TlvDq8ikWAM">Rachel (Female, American)</option>
+                <option value="AZnzlk1XvdvUeBnXmlld">Domi (Female, American)</option>
+                <option value="EXAVITQu4vr4xnSDxMaL">Bella (Female, American)</option>
+                <option value="ErXwobaYiN019PkySvjV">Antoni (Male, American)</option>
+                <option value="VR6AewLTigWG4xSOukaG">Arnold (Male, American)</option>
+            </select>
+        </div>
+
+        <!-- Voice stability parameter - controls consistency vs creativity -->
+        <div class="form-group">
+            <label for="stability">Stability (0.0 - 1.0):</label>
+            <!-- Higher values = more consistent, Lower values = more creative -->
+            <input type="number" id="stability" name="stability" min="0" max="1" step="0.1" value="0.5">
+        </div>
+
+        <!-- Similarity boost parameter - enhances voice likeness -->
+        <div class="form-group">
+            <label for="similarityBoost">Similarity Boost (0.0 - 1.0):</label>
+            <!-- Higher values = more similar to original voice training data -->
+            <input type="number" id="similarityBoost" name="similarityBoost" min="0" max="1" step="0.1" value="0.7">
+        </div>
+
+        <!-- Style parameter - controls emotional expression -->
+        <div class="form-group">
+            <label for="style">Style (0.0 - 1.0):</label>
+            <!-- Higher values = more emotional expression and style variation -->
+            <input type="number" id="style" name="style" min="0" max="1" step="0.1" value="0.3">
+        </div>
+
+        <!-- Speaker boost toggle - enhances speaker characteristics -->
+        <div class="form-group">
+            <label for="useSpeakerBoost">Use Speaker Boost:</label>
+            <!-- Amplifies unique speaker traits and voice quality -->
+            <select id="useSpeakerBoost" name="useSpeakerBoost">
+                <option value="true">Yes</option>
+                <option value="false">No</option>
+            </select>
+        </div>
+
+        <!-- Submit button - triggers API call to Spring Boot controller -->
+        <button type="submit" id="generateBtn">🎵 Generate Speech</button>
+    </form>
+
+    <!-- ========== AUDIO PLAYBACK SECTION ========== -->
+    <!-- This section displays the generated audio and playback controls -->
+    <div class="audio-section">
+        <h3>Generated Audio:</h3>
+        <!-- HTML5 audio player - initially hidden until audio is generated -->
+        <audio id="audioPlayer" controls style="display: none;">
+            Your browser does not support the audio element.
+        </audio>
+        <!-- Status message for user feedback -->
+        <p id="audioStatus">Click "Generate Speech" to create audio</p>
+    </div>
+
+    <!-- ========== CONSOLE LOG SECTION ========== -->
+    <!-- Real-time logging of API calls, responses, and debug information -->
+    <div class="log" id="logArea">
+        <strong>Console Log:</strong><br>
+        Ready to generate speech...
+    </div>
+</div>
+
+<!-- ========== JAVASCRIPT APPLICATION LOGIC ========== -->
+<script>
+    // ========== DOM ELEMENT REFERENCES ==========
+    // Get references to all important DOM elements
+    const form = document.getElementById('ttsForm');
+    const generateBtn = document.getElementById('generateBtn');
+    const audioPlayer = document.getElementById('audioPlayer');
+    const audioStatus = document.getElementById('audioStatus');
+    const logArea = document.getElementById('logArea');
+
+    // ========== UTILITY FUNCTIONS ==========
+
+    /**
+     * Adds timestamped log messages to the console area
+     * @param {string} message - The message to log
+     * @param {string} type - The type of message (info, success, error)
+     */
+    function addLog(message, type = 'info') {
+        const timestamp = new Date().toLocaleTimeString();
+        const logClass = type === 'error' ? 'error' : type === 'success' ? 'success' : 'info';
+        logArea.innerHTML += `<br><span class="${logClass}">[${timestamp}] ${message}</span>`;
+        logArea.scrollTop = logArea.scrollHeight; // Auto-scroll to latest message
+        console.log(`[${timestamp}] ${message}`); // Also log to browser console
+    }
+
+    // ========== MAIN FORM SUBMISSION HANDLER ==========
+
+    /**
+     * Handles form submission and API communication with Spring Boot
+     * This is the main function that orchestrates the TTS process
+     */
+    form.addEventListener('submit', async function(e) {
+        // Prevent default form submission (which would reload the page)
+        e.preventDefault();
+
+        // ========== UI STATE MANAGEMENT ==========
+        // Update UI to show loading state
+        generateBtn.disabled = true;
+        generateBtn.textContent = '🔄 Generating...';
+        audioPlayer.style.display = 'none';
+        audioStatus.textContent = 'Generating audio, please wait...';
+
+        // ========== DATA COLLECTION ==========
+        // Collect all form data and prepare for API call
+        // This object structure must match the TextToSpeechRequest record in Spring Boot
+        const formData = {
+            text: document.getElementById('text').value,
+            voiceId: document.getElementById('voiceId').value,
+            stability: parseFloat(document.getElementById('stability').value),
+            similarityBoost: parseFloat(document.getElementById('similarityBoost').value),
+            style: parseFloat(document.getElementById('style').value),
+            useSpeakerBoost: document.getElementById('useSpeakerBoost').value === 'true'
+        };
+
+        // Log the request details for debugging
+        addLog('Sending request to Spring Boot application...');
+        addLog(`Request data: ${JSON.stringify(formData, null, 2)}`);
+
+        // ========== API CALL TO SPRING BOOT ==========
+        try {
+            // Make POST request to our Spring Boot TTS endpoint
+            // The URL '/api/tts/speak' must match the @RequestMapping in our controller
+            const response = await fetch('/api/tts/speak', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json', // Tell server we're sending JSON
+                },
+                body: JSON.stringify(formData) // Convert JavaScript object to JSON string
+            });
+
+            // Log response status for debugging
+            addLog(`Response status: ${response.status} ${response.statusText}`);
+
+            // ========== ERROR HANDLING ==========
+            // Check if the HTTP request was successful
+            if (!response.ok) {
+                const errorText = await response.text();
+                throw new Error(`HTTP ${response.status}: ${errorText}`);
+            }
+
+            // ========== AUDIO PROCESSING ==========
+            // Convert the binary audio response to a Blob object
+            const audioBlob = await response.blob();
+            addLog(`Audio blob received: ${audioBlob.size} bytes`, 'success');
+
+            // Create a temporary URL for the audio data that the browser can use
+            const audioUrl = URL.createObjectURL(audioBlob);
+
+            // Set up the audio player with the generated audio
+            audioPlayer.src = audioUrl;
+            audioPlayer.style.display = 'block'; // Make audio player visible
+            audioStatus.textContent = 'Audio generated successfully! Click play button above.';
+
+            addLog('Audio ready for playback!', 'success');
+
+            // ========== AUTO-PLAY ATTEMPT ==========
+            // Try to auto-play the audio (some browsers may block this)
+            try {
+                await audioPlayer.play();
+                addLog('Audio started playing automatically', 'success');
+            } catch (playError) {
+                addLog('Auto-play blocked by browser. Please click play manually.', 'info');
+            }
+
+        } catch (error) {
+            // ========== ERROR LOGGING ==========
+            // Log any errors that occurred during the process
+            addLog(`Error: ${error.message}`, 'error');
+            audioStatus.textContent = 'Error generating audio. Check console for details.';
+
+        } finally {
+            // ========== UI RESET ==========
+            // Reset button state regardless of success or failure
+            generateBtn.disabled = false;
+            generateBtn.textContent = '🎵 Generate Speech';
+        }
+    });
+
+    // ========== AUDIO PLAYER EVENT LISTENERS ==========
+    // These events provide feedback about audio playback status
+
+    audioPlayer.addEventListener('loadstart', () =>
+        addLog('Audio loading started...'));
+
+    audioPlayer.addEventListener('canplay', () =>
+        addLog('Audio can start playing', 'success'));
+
+    audioPlayer.addEventListener('playing', () =>
+        addLog('Audio is playing', 'success'));
+
+    audioPlayer.addEventListener('ended', () =>
+        addLog('Audio playback finished'));
+
+    audioPlayer.addEventListener('error', (e) => {
+        addLog(`Audio error: ${audioPlayer.error ? audioPlayer.error.message : 'Unknown error'}`, 'error');
+    });
+</script>
+</body>
+</html>
