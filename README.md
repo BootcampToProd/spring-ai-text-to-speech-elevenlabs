@@ -9,11 +9,10 @@ Transform your Spring Boot applications with **high-quality, AI-powered text-to-
 👉 YouTube Tutorial - [**Spring AI Text-to-Speech with ElevenLabs - Give Your App a Voice!**](https://youtu.be/vVS4gMFHPNs)
 
 <p align="center">
-  <a href="https://youtu.be/vVS4gMFHPNs">
+  <a href="https://youtu.be/vVS4gMFHPNs" target="_blank">
     <img src="https://img.youtube.com/vi/vVS4gMFHPNs/0.jpg" alt="Spring AI Text-to-Speech with ElevenLabs" />
   </a>
 </p>
-
 
 ---
 
